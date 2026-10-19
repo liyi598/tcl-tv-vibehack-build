@@ -1,4 +1,4 @@
-name: Build TCL TV Launcher
+name: Build TCL TV Launcher Android 5.1
 
 on:
 
@@ -58,6 +58,52 @@ jobs:
 
           sdkmanager "platforms;android-34" "build-tools;34.0.0"
 
+      - name: Patch minimum Android version to API 22
+
+        working-directory: source/launcher
+
+        run: |
+
+          python3 - <<'PY'
+
+          from pathlib import Path
+
+          path = Path("app/build.gradle")
+
+          text = path.read_text()
+
+          old = "minSdk 26"
+
+          new = "minSdk 22"
+
+          if old not in text:
+
+              raise SystemExit(
+
+                  "ERROR: 未找到 minSdk 26，停止构建，避免修改错误。"
+
+              )
+
+          text = text.replace(old, new, 1)
+
+          path.write_text(text)
+
+          print("已修改最低 Android 版本：API 26 -> API 22")
+
+          print("当前相关配置：")
+
+          for line in text.splitlines():
+
+              if any(key in line for key in (
+
+                  "compileSdk", "minSdk", "targetSdk"
+
+              )):
+
+                  print(line.strip())
+
+          PY
+
       - name: Build launcher APK
 
         working-directory: source/launcher
@@ -76,7 +122,7 @@ jobs:
 
         with:
 
-          name: TCL-TV-Launcher
+          name: TCL-TV-Launcher-Android-5.1
 
           path: source/launcher/app/build/outputs/apk/debug/*.apk
 
